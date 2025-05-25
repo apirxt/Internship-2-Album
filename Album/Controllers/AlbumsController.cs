@@ -1,51 +1,33 @@
-﻿using AlbumModel = Album.Models.Album;
+﻿using Album.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using Microsoft.EntityFrameworkCore;
-using Album.Models;
 
 namespace Album.Controllers
 {
     public class AlbumsController : Controller
     {
         private readonly AlbumdbContext _context;
-
         public AlbumsController(AlbumdbContext context)
         {
             _context = context;
         }
 
         // GET: Albums
-        public async Task<IActionResult> Index()
+        public IActionResult Index(string searchString)
         {
-            var albumdbContext = _context.Albums.Include(a => a.File);
-            return View(await albumdbContext.ToListAsync());
-        }
-
-        // GET: Albums/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var album = await _context.Albums
-                .Include(a => a.File)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (album == null)
-            {
-                return NotFound();
-            }
-
-            return View(album);
+            List<Models.Album> albums = Models.Album.GetAll(_context, searchString);
+            return View(albums);
         }
 
         // GET: Albums/Create
         public IActionResult Create()
         {
-            ViewData["FileId"] = new SelectList(_context.Files, "Id", "Id");
-            return View();
+            Models.Album album = new Models.Album
+            {
+                Songs = new List<Song> { new Song() } // ใส่เปล่าก็ได้ เพื่อให้ EditorFor แสดง
+            };
+            return View(album);
         }
 
         // POST: Albums/Create
@@ -53,32 +35,50 @@ namespace Album.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,FileId,Description,CreateBy,CreateDate,UpdateBy,UpdateDate,IsDelete")] AlbumModel album)
+        public IActionResult Create(Models.Album album, string actionType, IFormFile Ifile, string? actionDelete)
         {
+            Console.WriteLine($"[DEBUG] actionType: {actionType}");
+            Console.WriteLine($"[DEBUG] Songs.Count: {album?.Songs?.Count}");
+
+            if (actionType == "AddSong")
+            {
+                if (album.Songs == null)
+                    album.Songs = new List<Song>();
+
+                album.Songs.Add(new Song());
+
+                // เคลียร์ ModelState เพื่อให้ EditorFor render state ล่าสุด
+                ModelState.Clear();
+
+                return View(album);
+            }
+
+            //if (actionDelete == "DeleteSong")
+            //{
+            //    album.Songs.Remove(new Song());
+            //    return View(album);
+            //}
+
             if (ModelState.IsValid)
             {
-                _context.Add(album);
-                await _context.SaveChangesAsync();
+                album.Create(_context, Ifile);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["FileId"] = new SelectList(_context.Files, "Id", "Id", album.FileId);
             return View(album);
         }
 
         // GET: Albums/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            var album = await _context.Albums.FindAsync(id);
+            Models.Album album = new Models.Album().GetById(_context, id.Value);
             if (album == null)
             {
                 return NotFound();
             }
-            ViewData["FileId"] = new SelectList(_context.Files, "Id", "Id", album.FileId);
             return View(album);
         }
 
@@ -87,74 +87,70 @@ namespace Album.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,FileId,Description,CreateBy,CreateDate,UpdateBy,UpdateDate,IsDelete")] AlbumModel album)
+        public IActionResult Edit(Models.Album album, string? actionType, string? OldCoverPhotoPath, string? actionDelete)
         {
-            if (id != album.Id)
+            if (actionType == "AddSong")
             {
-                return NotFound();
+                album.Songs.Add(new Song());
+                if (album.File == null && !string.IsNullOrEmpty(OldCoverPhotoPath))
+                {
+                    album.File = new Models.File { FilePath = OldCoverPhotoPath };
+                }
+                return View(album);
             }
+
+            if (actionDelete == "DeleteSong")
+            {
+                Song son = new Song();
+                son.IsDelete = true;
+                return View(album);
+            }
+
+            IFormFile newIfile = Request.Form.Files["Ifile"];
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(album);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AlbumExists(album.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                album.Update(_context, newIfile);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["FileId"] = new SelectList(_context.Files, "Id", "Id", album.FileId);
             return View(album);
         }
 
         // GET: Albums/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var album = await _context.Albums
+            var album = _context.Albums
                 .Include(a => a.File)
+                .Include(a => a.Songs.Where(s => s.IsDelete != true))
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (album == null)
             {
                 return NotFound();
             }
-
             return View(album);
         }
 
         // POST: Albums/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var album = await _context.Albums.FindAsync(id);
-            if (album != null)
+            if (id == null)
             {
-                _context.Albums.Remove(album);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+            Models.Album items = new Models.Album().GetById(_context, id);
+            if (items != null)
+            {
+                items.Delete(_context);
 
-        private bool AlbumExists(int id)
-        {
-            return _context.Albums.Any(e => e.Id == id);
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

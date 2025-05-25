@@ -29,21 +29,14 @@ public partial class AlbumdbContext : DbContext
     {
         modelBuilder.Entity<Album>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
-            entity.HasOne(d => d.File).WithMany(p => p.Albums).HasConstraintName("FK_Album_Album");
-        });
-
-        modelBuilder.Entity<File>(entity =>
-        {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasOne(d => d.File).WithMany(p => p.Albums).HasConstraintName("FK_Album_File");
         });
 
         modelBuilder.Entity<Song>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
-            entity.HasOne(d => d.Album).WithMany(p => p.Songs).HasConstraintName("FK_Song_Album");
+            entity.HasOne(d => d.Album).WithMany(p => p.Songs)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Song_Album");
         });
 
         OnModelCreatingPartial(modelBuilder);

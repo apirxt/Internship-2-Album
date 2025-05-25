@@ -1,0 +1,40 @@
+﻿@model Song
+
+@Html.HiddenFor(m => m.Id)
+@Html.HiddenFor(m => m.Name)
+@Html.HiddenFor(m => m.CreateBy)
+@Html.HiddenFor(m => m.CreateDate)
+@Html.HiddenFor(m => m.UpdateBy)
+@Html.HiddenFor(m => m.UpdateDate)
+@Html.HiddenFor(m => m.IsDelete)
+
+@{
+    string fullName = ViewData.TemplateInfo.GetFullHtmlFieldName(""); // Songs[0]
+    string index = fullName.Substring(fullName.IndexOf('[') + 1);
+    index = index.Substring(0, index.IndexOf(']')); // ค่าจะเป็น "0", "1", ...
+
+    string fieldName = ViewData.TemplateInfo.GetFullHtmlFieldName("");
+}
+
+@if (Model.IsDelete == false)
+{
+    <tr>
+        <td>
+            @Html.EditorFor(m => m.Name, new { @class = "form-control" })
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </td>
+        <td class="text-center">
+            <button type="submit" class="btn btn-danger" name="actionDelete" value="DeleteSong">Delete</button>
+        </td>
+    </tr>
+}
+else
+{
+    @Html.HiddenFor(m => m.Name)
+}
+
+<tr>
+    <td colspan="2" style="color:red;">
+        [DEBUG Template] Field: @fieldName | Name: @Model.Name
+    </td>
+</tr>

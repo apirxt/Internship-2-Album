@@ -12,27 +12,28 @@ public partial class Album
     [Key]
     public int Id { get; set; }
 
-    public string? Name { get; set; }
+    [Required]
+    public string Name { get; set; }
 
     public int? FileId { get; set; }
 
-    public string? Description { get; set; }
+    public string Description { get; set; }
 
-    public string? CreateBy { get; set; }
+    public string CreateBy { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? CreateDate { get; set; }
 
-    public string? UpdateBy { get; set; }
+    public string UpdateBy { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? UpdateDate { get; set; }
 
-    public bool? IsDelete { get; set; }
+    public bool IsDelete { get; set; }
 
     [ForeignKey("FileId")]
     [InverseProperty("Albums")]
-    public virtual File? File { get; set; }
+    public virtual File File { get; set; }
 
     [InverseProperty("Album")]
     public virtual ICollection<Song> Songs { get; set; } = new List<Song>();
