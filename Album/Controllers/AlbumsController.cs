@@ -1,7 +1,7 @@
 ﻿using Album.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace Album.Controllers
 {
@@ -35,29 +35,30 @@ namespace Album.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Models.Album album, string actionType, IFormFile Ifile, string? actionDelete)
+        public IActionResult Create(Models.Album album, string actionType, IFormFile Ifile, string? actionDelete, string? DeleteId)
         {
             Console.WriteLine($"[DEBUG] actionType: {actionType}");
             Console.WriteLine($"[DEBUG] Songs.Count: {album?.Songs?.Count}");
 
             if (actionType == "AddSong")
             {
-                if (album.Songs == null)
-                    album.Songs = new List<Song>();
-
                 album.Songs.Add(new Song());
 
                 // เคลียร์ ModelState เพื่อให้ EditorFor render state ล่าสุด
                 ModelState.Clear();
-
                 return View(album);
             }
 
-            //if (actionDelete == "DeleteSong")
-            //{
-            //    album.Songs.Remove(new Song());
-            //    return View(album);
-            //}
+
+
+            // เพิ่ท if
+            if (!string.IsNullOrEmpty(DeleteId))
+            {
+                ModelState.Clear();
+                return View(album);
+            }
+
+
 
             if (ModelState.IsValid)
             {
@@ -74,6 +75,7 @@ namespace Album.Controllers
             {
                 return BadRequest();
             }
+
             Models.Album album = new Models.Album().GetById(_context, id.Value);
             if (album == null)
             {
@@ -87,7 +89,7 @@ namespace Album.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Models.Album album, string? actionType, string? OldCoverPhotoPath, string? actionDelete)
+        public IActionResult Edit(Models.Album album, string? actionType, string? OldCoverPhotoPath, string? actionDelete, string? DeleteId)
         {
             if (actionType == "AddSong")
             {
@@ -99,10 +101,10 @@ namespace Album.Controllers
                 return View(album);
             }
 
-            if (actionDelete == "DeleteSong")
+            // if
+            if (!string.IsNullOrEmpty(DeleteId))
             {
-                Song son = new Song();
-                son.IsDelete = true;
+                ModelState.Clear();
                 return View(album);
             }
 

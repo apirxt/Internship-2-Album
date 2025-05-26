@@ -23,7 +23,7 @@ namespace Album.Models
             string originalFileName = Path.GetFileNameWithoutExtension(coverFile.FileName);
             string extension = Path.GetExtension(coverFile.FileName);
             string sanitizedFileName = Regex.Replace(originalFileName, "[^a-zA-Z0-9_-]", "").ToLower();
-            string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + sanitizedFileName + extension;
+            string fileName = DateTime.Now.ToString("dd-MM-yyyy_HH-mm-ss") + "_" + sanitizedFileName + extension;
             string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/upload", fileName);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path)!); // กันพังถ้าโฟลเดอร์ไม่มี
@@ -41,7 +41,7 @@ namespace Album.Models
                 IsDelete = false,
                 CreateBy = "user1",
                 CreateDate = datenow,
-                UpdateBy = "user1",
+                UpdateBy = "user2",
                 UpdateDate = datenow
             };
 

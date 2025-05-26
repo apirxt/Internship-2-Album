@@ -7,9 +7,23 @@
 <h4>Album</h4>
 <hr />
 
+<script>
+    function DeleteThisRoll(e){
+    e.value = true
+    $("#DeleteId").val('Edit')
+    $("#Deleteform").submit();
+    }
+</script>
+
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" id="Deleteform">
+
+            @Html.AntiForgeryToken()
+            @{
+                string DeleteId = "";
+            }
+            @Html.HiddenFor(model => DeleteId)
             @Html.EditorFor(model => model, "AlbumEdittor")
 
             <div class="mb-3">

@@ -31,21 +31,11 @@ namespace Album.Models
                 file = File.Create(context, Ifile);
                 if (file != null)
                 {
+                    
                     FileId = file.Id;
                     this.File = file;
                 }
             }
-
-            // ตั้งค่าข้อมูลทั่วไป
-            IsDelete = false;
-            CreateBy = "user1";
-            CreateDate = datenow;
-            UpdateBy = "user1";
-            UpdateDate = datenow;
-
-            context.Albums.Add(this);
-            context.SaveChanges();
-
             // เพิ่มเพลง
             List<Song> songs = this.Songs.ToList();
             foreach (Song s in songs)
@@ -53,8 +43,18 @@ namespace Album.Models
                 if (!string.IsNullOrEmpty(s.Name))
                 {
                     s.Create(context, this.Id);
+
                 }
             }
+            // ตั้งค่าข้อมูลทั่วไป
+            IsDelete = false;
+            CreateBy = "user1";
+            CreateDate = datenow;
+            UpdateBy = "user2";
+            UpdateDate = datenow;
+
+            context.Albums.Add(this);
+            context.SaveChanges();
             return true;
         }
 
@@ -93,7 +93,7 @@ namespace Album.Models
                 if (song.Id == 0)
                 {
                     song.CreateDate = datenow;
-                    song.CreateBy = "user2";
+                    song.CreateBy = "user1";
                 }
             }
             context.Albums.Update(this);

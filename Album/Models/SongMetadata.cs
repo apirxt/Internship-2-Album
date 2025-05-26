@@ -13,10 +13,9 @@ namespace Album.Models
         {
             DateTime datenow = DateTime.Now;
             this.AlbumId = AlbumId;
-            this.IsDelete = false;
             this.CreateBy = "user1";
             this.CreateDate = datenow;
-            this.UpdateBy = "user1";
+            this.UpdateBy = "user2";
             this.UpdateDate = datenow;
             context.Songs.Add(this);
             //context.SaveChanges();
@@ -42,7 +41,6 @@ namespace Album.Models
         //            oldSong.UpdateDate = DateTime.Now;
         //        }
         //    }
-
         //    if (this.Id != 0 && existingSong.Name != Name)
         //    {
         //        this.UpdateBy = "user2";
@@ -56,7 +54,6 @@ namespace Album.Models
         //        this.UpdateBy = "user2";
         //        this.UpdateDate = datenow;
         //        this.IsDelete = false;
-
         //    }
         //    return this;
         //}
